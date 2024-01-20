@@ -1,5 +1,7 @@
 from django.db import models
-from model_utils.models import TimeStampedModel, UUIDModel
+from model_utils.models import TimeStampedModel, UUIDModel, TimeFramedModel
+from django.utils.translation import gettext_lazy as _
+from model_utils import Choices
 
 # Create your models here.
 class Configuration(UUIDModel, TimeStampedModel):
@@ -205,3 +207,243 @@ class Configuration(UUIDModel, TimeStampedModel):
 
     def __str__(self):
         return f"{self.name}, {self.interface_type}"
+    
+
+class DisasterDeclaration(UUIDModel, TimeStampedModel):
+
+    EIDL = "0"
+    DEPT_OF_AG_EIDL = "1"
+    EARTHQUAKES = "2"
+    EXPLOSIONS = "4"
+    FIRES = "5"
+    FLOODS = "6"
+    FREEZES = "7"
+    HURRICANES = "8"
+    LANDSLIDES_MUDSLIDES = "9"
+    STORMS = "B"
+    TORNADOES = "C"
+    VOLCANIC_ERUPTIONS = "D"
+    OTHER_NATURAL = "E"
+    OTHER_MANMADE = "F"
+    UNKNOWN = "U"
+
+    DAMAGE_TYPE_CHOICES = (
+        (EIDL, f"{EIDL} - EIDL"),
+        (DEPT_OF_AG_EIDL, f"{DEPT_OF_AG_EIDL} - DEPT OF AG(FSA) EIDL"),
+        (EARTHQUAKES, f"{EARTHQUAKES} - EARTHQUAKES"),
+        (EXPLOSIONS, f"{EXPLOSIONS} - EXPLOSIONS"),
+        (FIRES, f"{FIRES} - FIRES"),
+        (FLOODS, f"{FLOODS} - FLOODS"),
+        (FREEZES, f"{FREEZES} - FREEZES"),
+        (HURRICANES, f"{HURRICANES} - HURRICANES"),
+        (LANDSLIDES_MUDSLIDES, f"{LANDSLIDES_MUDSLIDES} - LANDSLIDES/MUDSLIDES"),
+        (STORMS, f"{STORMS} - STORMS"),
+        (TORNADOES, f"{TORNADOES} - TORNADOES"),
+        (VOLCANIC_ERUPTIONS, f"{VOLCANIC_ERUPTIONS} - VOLCANIC ERUPTIONS"),
+        (OTHER_NATURAL, f"{OTHER_NATURAL} - OTHER: NATURAL"),
+        (OTHER_MANMADE, f"{OTHER_MANMADE} - OTHER: MANMADE"),
+        (UNKNOWN, f"{UNKNOWN} - UNKNOWN"),
+    )
+
+    # FIXME - remove these once we know they've been replaced everywhere
+    SBA_DECLARATION = 0
+    GOVERNOR_CERT = 1
+    MILITARY_RESERVIST_EIDL = 2
+    PRESIDENTIAL_IA = 3
+    PRESIDENTIAL_PA = 4
+    AG_SECRETARY = 5
+
+    DISASTER_NEW = 0
+    PREPARING_SURVEY = 1
+    SURVEY_IN_PROGRESS = 2
+    PENDING_SURVEY_VALIDATION = 3
+    SURVEY_VALIDATED = 4
+    FEMA_DECLINED = 5
+    FOC_REVIEW = 6
+    RESURVEY_REQUESTED = 7
+    ODA_REVIEW = 8
+    ODA_APPROVED = 9
+    PENDING_ADMIN_APPROVAL = 10
+    DISASTER_DECLARED = 11
+    AMEND_REQUESTED = 12
+    DISASTER_CANCELED = 13
+
+    DECLARATION_STATUS_CHOICES = (
+        (DISASTER_NEW, "Disaster New"),
+        (PREPARING_SURVEY, "Preparing Survey"),
+        (SURVEY_IN_PROGRESS, "Survey In Progress"),
+        (PENDING_SURVEY_VALIDATION, "Pending Survey Validation"),
+        (SURVEY_VALIDATED, "Survey Validated"),
+        (FEMA_DECLINED, "FEMA Declined"),
+        (FOC_REVIEW, "Survey Review"),
+        (RESURVEY_REQUESTED, "Resurvey Requested"),
+        (ODA_REVIEW, "Declaration Review"),
+        (ODA_APPROVED, "Declaration Approved"),
+        (PENDING_ADMIN_APPROVAL, "Pending Admin Approval"),
+        (DISASTER_DECLARED, "Disaster Declared"),
+        (AMEND_REQUESTED, "Amend Requested"),
+        (DISASTER_CANCELED, "Disaster Canceled"),
+    )
+
+    STATE_WITHDRAW = "state_withdraw"
+    SBA_DECLINE = "sba_decline"
+    VOID = "void"
+
+    CANCEL_CHOICES = (
+        (STATE_WITHDRAW, "State Withdraw"),
+        (SBA_DECLINE, "SBA Decline"),
+        (VOID, "Void"),
+    )
+
+    EIDL_PURPOSE = "eidl"
+    PHYSICAL = "physical"
+    MREIDL = "mreidl"
+
+    PURPOSE_CHOICES = (
+        (EIDL_PURPOSE, "EIDL"),
+        (MREIDL, "MREIDL"),
+        (PHYSICAL, "Physical Damage"),
+    )
+
+    db_disaster_number = models.PositiveIntegerField(null=True, blank=True)
+    disaster_number = models.CharField(_("Disaster Number"), max_length=255, blank=True, default="")
+    db_physical_damage_number = models.PositiveIntegerField(null=True, blank=True)
+    db_eidl_damage_number = models.PositiveIntegerField(null=True, blank=True)
+    disaster_description = models.CharField(_("Disaster Description"), max_length=255, blank=True, default="")
+
+    disaster_initiator = models.CharField(max_length=128, default="", blank=True, verbose_name=_("Disaster Initiator"))
+    primary_disaster_state = models.CharField(_("Primary State"), null=True, blank=True, max_length=100)
+    primary_counties = models.JSONField("Primary Locales", blank=True, default=list)
+    contiguous_counties = models.JSONField("Contiguous Locales", blank=True, default=list)
+    tribal_regions = models.JSONField("Tribal Regions", blank=True, default=list)
+    damage_type_code = models.CharField(
+        _("Disaster Damage Type"), choices=DAMAGE_TYPE_CHOICES, max_length=2, blank=True, default=""
+    )
+    contact_person = models.CharField(_("Contact Person"), max_length=255, blank=True, default="")
+    form_605_remarks = models.TextField(_("Form 605 Remarks"), blank=True, default="")
+
+    disaster_status = models.IntegerField(
+        _("Disaster Status"), choices=DECLARATION_STATUS_CHOICES, null=True, blank=True, default=0
+    )
+    fema_number = models.CharField(_("FEMA Number"), max_length=255, blank=True, default="")
+    usda_agency_number = models.CharField(_("USDA Agency Number"), max_length=255, blank=True, default="")
+    incident_start_date = models.DateField(_("Incident Start Date"), null=True, blank=True)
+    incident_end_date = models.DateField(_("Incident End Date"), null=True, blank=True)
+    request_date = models.DateField(_("Request Date"), null=True, blank=True)
+    received_date = models.DateField(_("Received Date"), null=True, blank=True)
+    geographic_multiplier = models.DecimalField(
+        _("Geographic Multiplier"), max_digits=6, decimal_places=3, null=True, blank=True
+    )
+    physical_declaration_number = models.CharField(
+        _("Physical Declaration Number"), max_length=255, blank=True, default=""
+    )
+    physical_deadline_date = models.DateField(_("Physical Deadline Date"), null=True, blank=True)
+    physical_unsecured_limit = models.DecimalField(
+        _("Physical Unsecured Limit"), max_digits=16, decimal_places=2, null=True, blank=True, default=25000
+    )
+    eidl_declaration_number = models.CharField(_("EIDL Declaration Number"), max_length=255, blank=True, default="")
+    eidl_deadline_date = models.DateField(_("EIDL Deadline Date"), null=True, blank=True)
+    eidl_unsecured_limit = models.DecimalField(
+        _("EIDL Unsecured Limit"), max_digits=16, decimal_places=2, null=True, blank=True, default=25000
+    )
+    declaration_date = models.DateField(_("Declaration Date"), null=True, blank=True)
+    disbursement_period_months = models.IntegerField(_("Disbursement Period (Months)"), default=6)
+    grace_period_days = models.IntegerField(_("Grace Period (Days)"), default=15)
+    payment_deferment_period_months = models.IntegerField(_("Payment Deferment Period"), default=11)
+    first_payment_due_months = models.IntegerField(_("First Payment Due"), default=12)
+    initial_disbursement_limit = models.IntegerField(
+        _("Amount that can be initially disbursed for a loan"), default=50000
+    )
+    is_active = models.BooleanField(_("Is Active"), default=True)
+
+    naics_code_set = models.IntegerField(blank=True, null=True, verbose_name=_("NAICS Data Set Year"))
+
+    interest_rate = models.JSONField("Interest Rate", blank=True, default=dict)
+    is_survey_required = models.BooleanField(_("Is Survey Required"), default=True)
+
+    is_ulp_serviced = models.BooleanField(_("Is ULP Serviced"), default=False)
+
+    cancel_notes = models.TextField(blank=True, null=True)
+    cancel_at = models.DateTimeField(blank=True, null=True)
+    cancel_reason = models.CharField(max_length=20, choices=CANCEL_CHOICES, null=True, blank=True)
+    document_data = models.JSONField("Document Data", blank=True, default=dict)
+
+    source_external_files = models.JSONField(
+        "External Files from Legacy system", blank=True, default=list)
+
+    survey_request_date = models.DateField(_("Survey Request Date"), null=True, blank=True)
+    survey_received_date = models.DateField(_("Survey Received Date"), null=True, blank=True)
+    reinstatement_period = models.IntegerField(_("Reinstatement Period (Days)"), default=60)
+    signer_details = models.JSONField(blank=True, default=dict)
+
+class ProductType(UUIDModel, TimeStampedModel):
+    class Meta:
+        permissions = [
+            ("can_view_product_types", "Can View Product Types"),
+        ]
+
+    LOC = "LOC"
+    TL = "TL"
+    SR = "SR"
+    EL = "EL"
+    DL = "DL"
+
+    PRODUCT_TYPE_CODE_CHOICES = (
+        (LOC, "Line of Credit"),
+        (TL, "Term Loan"),
+        (SR, "Service Request"),
+        (EL, "SBA Express Loan"),
+        (DL, "Disaster Business Loan"),
+    )
+
+    name = models.CharField("Product Type Name", max_length=250, unique=True)
+    description = models.TextField("Product Type Description", blank=True, null=True)
+    product_type_code = models.CharField(
+        "Product Type Code",
+        choices=PRODUCT_TYPE_CODE_CHOICES,
+        max_length=15,
+        unique=True,
+    )
+
+    is_removed = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Product(UUIDModel, TimeFramedModel, TimeStampedModel):
+    PRODUCT_CODE_HOME = "DLAP5C"
+    PRODUCT_CODE_BUSINESS = "DLAP5"
+
+    class Meta:
+        permissions = [
+            ("can_view_products", "Can View Products"),
+        ]
+
+    STATUS = Choices(("draft", "Draft"), ("active", "Active"), ("inactive", "Inactive"))
+
+    name = models.CharField("Product Name", max_length=250, unique=True)
+    description = models.TextField("Product Description", blank=True, null=True)
+    product_code = models.CharField(
+        "Product Code",
+        max_length=15,
+        blank=True,
+        null=True,
+        unique=True,
+    )
+    fi_product_code = models.CharField("FI Product Code", max_length=255, null=True, blank=True, unique=True)
+    product_type = models.ForeignKey(ProductType, on_delete=models.PROTECT)
+
+    min_term_in_months = models.PositiveSmallIntegerField("Min Term in Months", default=1)
+    max_term_in_months = models.PositiveSmallIntegerField("Max Term in Months", default=180)
+    min_rate = models.FloatField("Minimum Interest Rate", default=0.0)
+    max_rate = models.FloatField("Maximum Interest Rate", default=36.0)
+    is_express_loan = models.BooleanField(default=False)
+    is_demand_feature_loan = models.BooleanField(default=False)
+    is_multiterm = models.BooleanField(default=False)
+    file_due_in_days = models.PositiveSmallIntegerField(default=14)
+
+    is_removed = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return str(self.name)
