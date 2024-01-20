@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'configurations',
+    'configurations',
     'rest_framework',
 ]
 
@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'test_website.wsgi.app'
+WSGI_APPLICATION = 'test_website.wsgi.application'
 
 
 # Database
