@@ -17,18 +17,21 @@ def get_configurations(request):
 
 @api_view(['GET'])
 def get_products(request):
+    permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
     configurations = Product.objects.all()
     serializer = ProductSerializer(configurations, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 def get_disaster_declarations(request):
+    permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
     configurations = DisasterDeclaration.objects.all()
     serializer = DisasterDeclarationSerializer(configurations, many=True)
     return Response(serializer.data)
 
 @api_view(['GET', 'POST'])
 def get_post_loans(request):
+    permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
     if request.method == 'GET':
         loans = Loan.objects.all()
         serializer = LoanSerializer(loans, many=True)
