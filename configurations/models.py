@@ -447,3 +447,7 @@ class Product(UUIDModel, TimeFramedModel, TimeStampedModel):
 
     def __str__(self) -> str:
         return str(self.name)
+
+class Loan(UUIDModel, TimeStampedModel):
+    status = models.CharField(max_length=10, default="Pending Approval")
+    details = models.JSONField(blank=True, default=dict)
