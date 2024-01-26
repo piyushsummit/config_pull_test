@@ -38,11 +38,17 @@ def get_post_loans(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = LoanSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            data_array = request.data["details"]
+            created_loans = []
+            for data in data_array:
+                loan_serializer = LoanSerializer(data=data)
+                if loan_serializer.is_valid():
+                    loan_serializer.save()
+                    created_loans.append(loan_serializer.data)
+                else:
+                    return Response(loan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(created_loans, status=status.HTTP_201_CREATED)
+        
 
 @api_view(['GET', 'POST'])
 def get_post_flutter_loans(request):
