@@ -451,3 +451,7 @@ class Product(UUIDModel, TimeFramedModel, TimeStampedModel):
 class Loan(UUIDModel, TimeStampedModel):
     status = models.CharField(max_length=10, default="Pending")
     details = models.JSONField(blank=True, default=dict)
+
+class FlutterLoan(UUIDModel, TimeStampedModel):
+    status = models.CharField(max_length=10, default="Pending")
+    details = models.JSONField(blank=True, default=dict)

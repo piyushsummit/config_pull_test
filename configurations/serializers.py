@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Configuration, Product, DisasterDeclaration, Loan
+from .models import Configuration, Product, DisasterDeclaration, Loan, FlutterLoan
 
 class ConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,4 +20,9 @@ class DisasterDeclarationSerializer(serializers.ModelSerializer):
 class LoanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Loan
+        fields = '__all__'
+
+class FlutterLoanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FlutterLoan
         fields = '__all__'
