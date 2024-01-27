@@ -51,7 +51,7 @@ def get_post_loans(request):
             return Response(created_loans, status=status.HTTP_201_CREATED)
         
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'DELETE'])
 def get_post_flutter_loans(request):
     permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
     if request.method == 'GET':
@@ -65,3 +65,16 @@ def get_post_flutter_loans(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        flutter_loan_id = request.query_params.get('id', None)
+        if flutter_loan_id:
+            try:
+                flutter_loan = FlutterLoan.objects.get(id=flutter_loan_id)
+                flutter_loan.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except FlutterLoan.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            FlutterLoan.objects.all().delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
