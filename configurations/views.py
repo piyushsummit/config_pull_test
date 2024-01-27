@@ -11,6 +11,7 @@ from rest_framework import status
 @api_view(['GET'])
 def get_configurations(request):
     permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
+    print(request.headers)
     configurations = Configuration.objects.all()
     serializer = ConfigurationSerializer(configurations, many=True)
     return Response(serializer.data)
